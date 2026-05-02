@@ -1,0 +1,63 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+
+# SQLite database (if using local DB for demo)
+*.db
+*.sqlite3
+
+# FastAPI / Uvicorn
+*.pid
+*.sock
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Static / media uploads (optional, if user uploads allowed)
+media/
+uploads/
+
+# Node modules (if frontend added later)
+node_modules/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Jupyter Notebook checkpoints (if used)
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Secrets (important for crypto project)
+keys/
+private_keys/
