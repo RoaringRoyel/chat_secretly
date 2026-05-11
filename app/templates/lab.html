@@ -1,1 +1,22 @@
-{% extends 'base.html' %}{% block content %}<h2>Crypto Lab</h2><form method='post' class='panel'><label>Algorithm</label><select name='algorithm'><option value='substitution'>Substitution Cipher</option><option value='double'>Double Transposition</option><option value='des'>DES</option><option value='aes'>AES</option><option value='rsa'>RSA</option><option value='ecc'>ECC / ECDH</option></select><label>Plaintext / input text</label><textarea name='text'>HELLO CSE721</textarea><label>Key 1: substitution 26-letter key or first permutation</label><input name='key' value='QWERTYUIOPASDFGHJKLZXCVBNM'><label>Key 2: second permutation for double transposition</label><input name='key2' value='3 1 4 2'><label>RSA key size</label><input name='bits' type='number' value='128'><button>Run</button></form>{% if result %}<section class='panel'><h3>Result</h3><pre>{{result}}</pre></section>{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<h2>Crypto Lab</h2>
+<form method='post' class='panel'>
+    <label>Algorithm</label><select name='algorithm'><option value='substitution'>Substitution Cipher</option><option value='double'>Double Transposition</option><option value='des'>DES</option><option value='aes'>AES</option><option value='rsa'>RSA</option><option value='ecc'>ECC / ECDH</option></select>
+    <label>Plaintext / input text</label>
+    <textarea name='text'>HELLO CSE721</textarea>
+    <label>Key 1: substitution 26-letter key or first permutation</label>
+    <input name='key' value='QWERTYUIOPASDFGHJKLZXCVBNM'>
+    <label>Key 2: second permutation for double transposition</label>
+    <input name='key2' value='3 1 4 2'>
+    <label>RSA key size</label>
+    <input name='bits' type='number' value='128'>
+    <button>Run</button>
+</form>
+{% if result %}
+<section class='panel'>
+    <h3>Result</h3>
+    <pre>{{result}}</pre>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,1 +1,10 @@
-{% extends 'base.html' %}{% block content %}<h2>Login</h2><form method='post'><input name='username' placeholder='Username' required><input name='password' type='password' placeholder='Password' required><button>Login</button></form><p class='muted'>Login uses a custom SHA-like educational salted password hash for demonstration.</p>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<h2>Login</h2>
+<form method='post'>
+    <input name='username' placeholder='Username' required>
+    <input name='password' type='password' placeholder='Password' required>
+    <button>Login</button>
+</form>
+<p class='muted'>Login uses a custom SHA-like educational salted password hash for demonstration.</p>
+{% endblock %}
