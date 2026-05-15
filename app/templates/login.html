@@ -1,10 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Login</h2>
-<form method='post'>
-    <input name='username' placeholder='Username' required>
-    <input name='password' type='password' placeholder='Password' required>
-    <button>Login</button>
-</form>
-<p class='muted'>Login uses a custom SHA-like educational salted password hash for demonstration.</p>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-title">Sign in</div>
+    <div class="auth-sub">Access your encrypted workspace</div>
+
+    {% if request.query_params.get('error') %}
+    <div class="auth-error">{{ request.query_params.get('error') | replace('+', ' ') }}</div>
+    {% endif %}
+
+    <form method="post">
+      <div class="field">
+        <label>Username</label>
+        <input name="username" placeholder="your username" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input name="password" type="password" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-full">Login</button>
+    </form>
+
+    <p class="auth-switch">No account? <a class="auth-link" href="/register">Register here</a></p>
+    <div class="auth-note">Uses a custom SHA-like educational salted password hash for demonstration.</div>
+  </div>
+</div>
+
 {% endblock %}

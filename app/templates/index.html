@@ -1,15 +1,66 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class='hero'><h1>CSE721 Cryptography Project</h1>
-    <p>FastAPI app for implementing, visualizing, and comparing classical, symmetric-key, and public-key cryptographic algorithms.</p>
-    <div class='cards'>
-        <div><h3>Crypto Lab</h3><p>Run Substitution, Double Transposition, DES, AES, RSA, and ECC demos.</p><a class='btn' href='/lab'>Open Lab</a>
-    </div>
-    <div>
-        <h3>Encrypted Chat</h3><p>Search users, send encrypted messages, and view encryption/decryption details.</p><a class='btn' href='/chat'>Open Chat</a>
-    </div>
-    </div>
-    
-</section>
+
+<div class="hero">
+  <div class="hero-badge">⬡ CSE721 Cryptography Project</div>
+
+  <h1>Encrypt. Decrypt.<br><em>Understand.</em></h1>
+
+  <p>Visualize and compare classical, symmetric-key, and public-key cryptographic algorithms — all in one place.</p>
+
+  <div class="live-cipher" id="live-cipher">HELLO CSE721</div>
+
+  <div class="hero-cards">
+    <a class="hero-card" href="/lab">
+      <div class="hero-card-icon">🔬</div>
+      <h3>Crypto Lab</h3>
+      <p>Run Substitution, Double Transposition, DES, AES, RSA, and ECC demos with live output.</p>
+      <span class="hero-card-link">Open Lab →</span>
+    </a>
+    <a class="hero-card" href="/chat">
+      <div class="hero-card-icon">💬</div>
+      <h3>Encrypted Chat</h3>
+      <p>Search users, send AES-encrypted messages, and inspect ciphertext in real time.</p>
+      <span class="hero-card-link">Open Chat →</span>
+    </a>
+  </div>
+
+  <div class="algo-pills">
+    <span class="algo-pill">Substitution</span>
+    <span class="algo-pill">Double Transposition</span>
+    <span class="algo-pill">DES</span>
+    <span class="algo-pill">AES-128</span>
+    <span class="algo-pill">RSA</span>
+    <span class="algo-pill">ECC / ECDH</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  const PLAIN = 'HELLO CSE721';
+  const KEY   = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+  const enc   = PLAIN.split('').map(c =>
+    c >= 'A' && c <= 'Z' ? KEY[c.charCodeAt(0) - 65] : c
+  ).join('');
+
+  const steps = 12;
+  const frames = [PLAIN];
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    frames.push(PLAIN.split('').map((c, j) =>
+      Math.random() < t ? (enc[j] || c) : c
+    ).join(''));
+  }
+  frames.push(enc);
+
+  let f = 0, dir = 1;
+  const el = document.getElementById('live-cipher');
+  setInterval(() => {
+    el.textContent = frames[f];
+    f += dir;
+    if (f >= frames.length - 1 || f <= 0) dir *= -1;
+  }, 190);
+})();
+</script>
 
 {% endblock %}

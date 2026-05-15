@@ -1,22 +1,197 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Crypto Lab</h2>
-<form method='post' class='panel'>
-    <label>Algorithm</label><select name='algorithm'><option value='substitution'>Substitution Cipher</option><option value='double'>Double Transposition</option><option value='des'>DES</option><option value='aes'>AES</option><option value='rsa'>RSA</option><option value='ecc'>ECC / ECDH</option></select>
-    <label>Plaintext / input text</label>
-    <textarea name='text'>HELLO CSE721</textarea>
-    <label>Key 1: substitution 26-letter key or first permutation</label>
-    <input name='key' value='QWERTYUIOPASDFGHJKLZXCVBNM'>
-    <label>Key 2: second permutation for double transposition</label>
-    <input name='key2' value='3 1 4 2'>
-    <label>RSA key size</label>
-    <input name='bits' type='number' value='128'>
-    <button>Run</button>
-</form>
-{% if result %}
-<section class='panel'>
-    <h3>Result</h3>
-    <pre>{{result}}</pre>
-</section>
-{% endif %}
+
+<div class="lab-layout">
+
+  {# ── Sidebar ── #}
+  <aside class="lab-sidebar">
+    <span class="sidebar-label">Algorithm</span>
+    <button class="algo-btn active" data-algo="substitution" onclick="setAlgo(this)">Substitution Cipher</button>
+    <button class="algo-btn"        data-algo="double"       onclick="setAlgo(this)">Double Transposition</button>
+    <button class="algo-btn"        data-algo="des"          onclick="setAlgo(this)">DES</button>
+    <button class="algo-btn"        data-algo="aes"          onclick="setAlgo(this)">AES</button>
+    <button class="algo-btn"        data-algo="rsa"          onclick="setAlgo(this)">RSA</button>
+    <button class="algo-btn"        data-algo="ecc"          onclick="setAlgo(this)">ECC / ECDH</button>
+  </aside>
+
+  {# ── Main ── #}
+  <div class="lab-main">
+    <form method="post" class="lab-form">
+      <input type="hidden" name="algorithm" id="algo-value" value="substitution">
+
+      <div class="field">
+        <label>Plaintext / Input Text</label>
+        <textarea name="text">HELLO CSE721</textarea>
+      </div>
+
+      <div class="field" id="f-key">
+        <label>Key 1 — substitution 26-letter key or first permutation</label>
+        <input name="key" value="QWERTYUIOPASDFGHJKLZXCVBNM">
+      </div>
+
+      <div class="field hidden" id="f-key2">
+        <label>Key 2 — second permutation for double transposition</label>
+        <input name="key2" value="3 1 4 2">
+      </div>
+
+      <div class="field hidden" id="f-bits">
+        <label>RSA Key Size (bits)</label>
+        <input name="bits" type="number" value="128" style="width:140px">
+      </div>
+
+      <button type="submit" class="run-btn">▶ Run Algorithm</button>
+    </form>
+
+    {# ── Result ── #}
+    {% if result %}
+    <div class="result-panel">
+      <div class="result-header">
+        <span class="result-dot"></span>
+        <span>Output</span>
+        {% if result.time_ms is defined %}
+          <span class="result-time">{{ result.time_ms }} ms</span>
+        {% endif %}
+      </div>
+      <div class="result-body">
+
+        {% if result.error is defined %}
+          <div class="res-block">
+            <div class="res-label">Error</div>
+            <div class="res-val danger">{{ result.error }}</div>
+          </div>
+
+        {% else %}
+
+          {# ── Ciphertext + Decrypted ── #}
+          {% if result.ciphertext is defined %}
+          <div class="res-grid">
+            <div class="res-block">
+              <div class="res-label">Ciphertext</div>
+              <div class="res-val">{{ result.ciphertext }}</div>
+            </div>
+            {% if result.decrypted is defined %}
+            <div class="res-block">
+              <div class="res-label">Decrypted</div>
+              <div class="res-val muted">{{ result.decrypted }}</div>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {# ── AES / DES auto key ── #}
+          {% if result.auto_key_hex is defined %}
+          <div class="res-block">
+            <div class="res-label">Auto Key (hex)</div>
+            <div class="res-val">{{ result.auto_key_hex }}</div>
+          </div>
+          {% endif %}
+
+          {# ── Round keys ── #}
+          {% if result.round_keys is defined %}
+          <div class="res-block">
+            <div class="res-label">Round Keys</div>
+            <div class="res-val amber">{{ result.round_keys }}</div>
+          </div>
+          {% endif %}
+
+          {# ── RSA keys ── #}
+          {% if result.public_key is defined %}
+          <div class="res-grid">
+            <div class="res-block">
+              <div class="res-label">Public Key (e, n)</div>
+              <div class="res-val">{{ result.public_key }}</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Private Key d</div>
+              <div class="res-val">{{ result.private_key }}</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Prime p</div>
+              <div class="res-val amber">{{ result.p }}</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Prime q</div>
+              <div class="res-val amber">{{ result.q }}</div>
+            </div>
+          </div>
+          {% if result.factorization_attack is defined %}
+          <div class="res-block">
+            <div class="res-label">Factorization Attack</div>
+            <div class="res-val muted">{{ result.factorization_attack }}</div>
+          </div>
+          {% endif %}
+          {% endif %}
+
+          {# ── ECC fallback ── #}
+          {% if result.shared_secret is defined or result.curve is defined %}
+          <div class="res-block">
+            <div class="res-label">ECC Demo Output</div>
+            <div class="res-val amber"><pre>{{ result | tojson(indent=2) }}</pre></div>
+          </div>
+          {% endif %}
+
+          {# ── Caesar brute-force ── #}
+          {% if result.caesar_bruteforce is defined %}
+          <div class="res-block">
+            <div class="res-label">Caesar Brute-Force (top 5)</div>
+            <div class="res-val amber">{% for l in result.caesar_bruteforce %}{{ l }}
+{% endfor %}</div>
+          </div>
+          {% endif %}
+
+          {# ── Frequency analysis ── #}
+          {% if result.frequency is defined %}
+          {% set freq = result.frequency %}
+          {% set max_count = freq.values() | max %}
+          <div class="res-block">
+            <div class="res-label">Frequency Analysis</div>
+            <div class="freq-bars">
+              {% for char, count in freq.items() | sort %}
+              <div class="freq-bar-wrap" title="{{ char }}: {{ count }}">
+                <div class="freq-bar" style="height:{{ ((count / max_count) * 60) | int }}px"></div>
+                <div class="freq-char">{{ char }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {# ── Note ── #}
+          {% if result.note is defined %}
+          <div class="res-block">
+            <div class="res-label">Note</div>
+            <div class="res-val muted">{{ result.note }}</div>
+          </div>
+          {% endif %}
+
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+const ALGO_FIELDS = {
+  substitution: { key: true,  key2: false, bits: false },
+  double:       { key: true,  key2: true,  bits: false },
+  des:          { key: false, key2: false, bits: false },
+  aes:          { key: false, key2: false, bits: false },
+  rsa:          { key: false, key2: false, bits: true  },
+  ecc:          { key: false, key2: false, bits: false },
+};
+
+function setAlgo(btn) {
+  document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const a = btn.dataset.algo;
+  document.getElementById('algo-value').value = a;
+  const f = ALGO_FIELDS[a] || {};
+  document.getElementById('f-key').classList.toggle('hidden', !f.key);
+  document.getElementById('f-key2').classList.toggle('hidden', !f.key2);
+  document.getElementById('f-bits').classList.toggle('hidden', !f.bits);
+}
+</script>
+
 {% endblock %}

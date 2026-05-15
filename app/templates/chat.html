@@ -1,14 +1,93 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Encrypted Chat</h2>
-<section class='panel'><h3>Search people by username</h3>
-    <form method='get'><input name='q' value='{{q}}' placeholder='Search username'><button>Search</button></form>
-    {% if q %}<p><b>Substitution cipher demo for search query:</b> {{q}} → <code>{{search_demo}}</code></p>{% endif %}{% for u in users %}
-    <form method='post' action='/send' class='send'><b>{{u.username}}</b>
-        <input type='hidden' name='receiver_id' value='{{u.id}}'>
-        <input name='message' placeholder='Message to {{u.username}}'><button>Send encrypted</button>
-    </form>{% endfor %}</section>
-<section class='panel'><h3>Messages</h3><p class='muted'>AES demo key: <code>{{aes_key}}</code></p>{% for m in messages %}
-    <div class='msg'><b>{{m.sender}} → {{m.receiver}}</b><p>Plaintext demo: {{m.plaintext_demo}}</p><p>Ciphertext hex: <code>{{m.ciphertext_hex}}</code></p><small>{{m.created_at}}</small></div>{% endfor %}</section>
 
-    {% endblock %}
+<div class="chat-layout">
+
+  {# ── Sidebar ── #}
+  <aside class="chat-sidebar">
+    <span class="sidebar-label">Search People</span>
+
+    <form method="get" class="search-row">
+      <input name="q" value="{{ q }}" placeholder="Search username…">
+      <button type="submit" class="search-go">Go</button>
+    </form>
+
+    {% if q %}
+    <div class="search-demo">
+      <span class="search-demo-label">cipher preview</span>
+      <span>{{ q }}</span>
+      <span class="search-demo-arrow">→</span>
+      <code class="search-demo-cipher">{{ search_demo }}</code>
+    </div>
+    {% endif %}
+
+    <div class="user-list">
+      {% for u in users %}
+      <div class="user-item">
+        <div class="avatar">{{ u.username[:2] | upper }}</div>
+        <div>
+          <div class="user-name">{{ u.username }}</div>
+          <div class="user-sub">id: {{ u.id }}</div>
+        </div>
+      </div>
+      {% else %}
+        <div class="empty-state">
+          {% if q %}No users found.{% else %}Search to find users.{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </aside>
+
+  {# ── Chat main ── #}
+  <div class="chat-main">
+
+    <div class="chat-topbar">
+      <div>
+        <div class="chat-topbar-name">Messages</div>
+        <div class="chat-topbar-sub">AES-128 CBC</div>
+      </div>
+      <div class="enc-status">
+        <span class="enc-dot"></span>
+        <span class="aes-badge">key: <code>{{ aes_key[:12] }}…</code></span>
+      </div>
+    </div>
+
+    <div class="messages" id="msg-list">
+      {% for m in messages %}
+      <div class="msg-wrap {% if m.sender == user.username %}out{% else %}in{% endif %}">
+        <div class="msg-from">{{ m.sender }} → {{ m.receiver }}</div>
+        <div class="msg-bubble">
+          <div class="msg-plain">{{ m.plaintext_demo }}</div>
+          <div class="msg-cipher">🔒 {{ m.ciphertext_hex[:56] }}{% if m.ciphertext_hex | length > 56 %}…{% endif %}</div>
+        </div>
+        <div class="msg-time">{{ m.created_at }}</div>
+      </div>
+      {% else %}
+      <div class="empty-state">No messages yet. Search a user above and send one!</div>
+      {% endfor %}
+    </div>
+
+    {# Send form — one per found user #}
+    {% for u in users %}
+    <div class="chat-input-area">
+      <form method="post" action="/send" class="send-form">
+        <input type="hidden" name="receiver_id" value="{{ u.id }}">
+        <input name="message" placeholder="Message to {{ u.username }}…" autocomplete="off">
+        <button type="submit" class="send-btn">🔒 Send to {{ u.username }}</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="chat-input-area">
+      <p class="chat-hint">Search for a user above to send a message.</p>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+<script>
+  const list = document.getElementById('msg-list');
+  if (list) list.scrollTop = list.scrollHeight;
+</script>
+
+{% endblock %}

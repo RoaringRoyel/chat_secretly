@@ -1,26 +1,31 @@
 <!doctype html>
-<html>
-    <head>
-        <meta charset='utf-8'>
-        <title>CSE721 Crypto</title>
-        <link rel='stylesheet' href='/static/style.css'>
-    </head>
-    <body>
-        <nav>
-            <a href='/'>Home</a>
-            <a href='/lab'>Crypto Lab</a>
-            <a href='/chat'>Encrypted Chat</a>
-            {% if user %}
-                <span>Logged in as {{user.username}}</span>
-                <a href='/logout'>Logout</a>
-            {% else %}
-                <a href='/login'>Login</a>
-                <a href='/register'>Register</a>
-            {% endif %}
-        </nav>
-        <main>
-            {% block content %}
-            {% endblock %}
-        </main>
-    </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>CSE721 Crypto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">CSE<span>721</span></a>
+  <a class="nav-link {% if request.url.path=='/lab'  %}active{% endif %}" href="/lab">Crypto Lab</a>
+  <a class="nav-link {% if request.url.path=='/chat' %}active{% endif %}" href="/chat">Encrypted Chat</a>
+  {% if user %}
+    <span class="nav-user">{{ user.username }}</span>
+    <a class="nav-link" href="/logout">Logout</a>
+  {% else %}
+    <a class="nav-link {% if request.url.path=='/login'    %}active{% endif %}" href="/login">Login</a>
+    <a class="nav-link {% if request.url.path=='/register' %}active{% endif %}" href="/register">Register</a>
+  {% endif %}
+</nav>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+</body>
 </html>

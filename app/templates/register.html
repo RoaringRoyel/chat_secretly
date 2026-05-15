@@ -1,9 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Register</h2>
-<form method='post'>
-    <input name='username' placeholder='Username' required>
-    <input name='password' type='password' placeholder='Password' required>
-    <button>Create account</button>
-</form>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-title">Create account</div>
+    <div class="auth-sub">Join the cryptography lab</div>
+
+    {% if request.query_params.get('error') %}
+    <div class="auth-error">{{ request.query_params.get('error') | replace('+', ' ') }}</div>
+    {% endif %}
+
+    <form method="post">
+      <div class="field">
+        <label>Username</label>
+        <input name="username" placeholder="choose a username" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input name="password" type="password" placeholder="••••••••" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-full">Create Account</button>
+    </form>
+
+    <p class="auth-switch">Already have one? <a class="auth-link" href="/login">Login</a></p>
+  </div>
+</div>
+
 {% endblock %}
