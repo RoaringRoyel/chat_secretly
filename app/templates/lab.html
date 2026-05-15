@@ -6,18 +6,18 @@
   {# ── Sidebar ── #}
   <aside class="lab-sidebar">
     <span class="sidebar-label">Algorithm</span>
-    <button class="algo-btn active" data-algo="substitution" onclick="setAlgo(this)">Substitution Cipher</button>
-    <button class="algo-btn"        data-algo="double"       onclick="setAlgo(this)">Double Transposition</button>
-    <button class="algo-btn"        data-algo="des"          onclick="setAlgo(this)">DES</button>
-    <button class="algo-btn"        data-algo="aes"          onclick="setAlgo(this)">AES</button>
-    <button class="algo-btn"        data-algo="rsa"          onclick="setAlgo(this)">RSA</button>
-    <button class="algo-btn"        data-algo="ecc"          onclick="setAlgo(this)">ECC / ECDH</button>
+    <button class="algo-btn" data-algo="substitution" onclick="setAlgo(this)">Substitution Cipher</button>
+    <button class="algo-btn" data-algo="double"       onclick="setAlgo(this)">Double Transposition</button>
+    <button class="algo-btn" data-algo="des"          onclick="setAlgo(this)">DES</button>
+    <button class="algo-btn" data-algo="aes"          onclick="setAlgo(this)">AES</button>
+    <button class="algo-btn" data-algo="rsa"          onclick="setAlgo(this)">RSA</button>
+    <button class="algo-btn" data-algo="ecc"          onclick="setAlgo(this)">ECC / ECDH</button>
   </aside>
 
   {# ── Main ── #}
   <div class="lab-main">
     <form method="post" class="lab-form">
-      <input type="hidden" name="algorithm" id="algo-value" value="substitution">
+      <input type="hidden" name="algorithm" id="algo-value" value="{{ algorithm if algorithm else 'substitution' }}">
 
       <div class="field">
         <label>Plaintext / Input Text</label>
@@ -122,35 +122,65 @@
           {% endif %}
           {% endif %}
 
-          {# ── ECC fallback ── #}
-          {% if result.shared_secret is defined or result.curve is defined %}
+          {# ── ECC — keys from ecc.demo(): alice_public, bob_public, shared_key_alice, shared_key_bob, parameters ── #}
+          {% if result.alice_public is defined %}
+          <div class="res-grid">
+            <div class="res-block">
+              <div class="res-label">Curve Parameters</div>
+              <div class="res-val muted">p={{ result.parameters.p }}, a={{ result.parameters.a }}, b={{ result.parameters.b }}, G={{ result.parameters.G }}</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Points on Curve</div>
+              <div class="res-val">{{ result.points | length }} points</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Alice private / public</div>
+              <div class="res-val amber">{{ result.alice_private }} / {{ result.alice_public }}</div>
+            </div>
+            <div class="res-block">
+              <div class="res-label">Bob private / public</div>
+              <div class="res-val amber">{{ result.bob_private }} / {{ result.bob_public }}</div>
+            </div>
+          </div>
           <div class="res-block">
-            <div class="res-label">ECC Demo Output</div>
-            <div class="res-val amber"><pre>{{ result | tojson(indent=2) }}</pre></div>
+            <div class="res-label">Shared Key — Alice computes</div>
+            <div class="res-val">{{ result.shared_key_alice }}</div>
+          </div>
+          <div class="res-block">
+            <div class="res-label">Shared Key — Bob computes</div>
+            <div class="res-val">{{ result.shared_key_bob }}</div>
+          </div>
+          {% if result.shared_key_alice == result.shared_key_bob %}
+          <div class="res-block">
+            <div class="res-label">Verification</div>
+            <div class="res-val" style="color:var(--teal)">✓ Both parties derived the same shared key</div>
           </div>
           {% endif %}
+          {% endif %}
 
-          {# ── Caesar brute-force ── #}
+          {# ── Caesar brute-force — list of {shift, plaintext} dicts ── #}
           {% if result.caesar_bruteforce is defined %}
           <div class="res-block">
-            <div class="res-label">Caesar Brute-Force (top 5)</div>
-            <div class="res-val amber">{% for l in result.caesar_bruteforce %}{{ l }}
+            <div class="res-label">Caesar Brute-Force (top 5 shifts)</div>
+            <div class="res-val amber">{% for item in result.caesar_bruteforce[:5] %}shift {{ item.shift }}: {{ item.plaintext }}
 {% endfor %}</div>
           </div>
           {% endif %}
 
-          {# ── Frequency analysis ── #}
+          {# ── Frequency analysis — list of {letter, count, percent} dicts ── #}
           {% if result.frequency is defined %}
           {% set freq = result.frequency %}
-          {% set max_count = freq.values() | max %}
+          {% set max_count = freq | map(attribute='count') | max %}
           <div class="res-block">
             <div class="res-label">Frequency Analysis</div>
             <div class="freq-bars">
-              {% for char, count in freq.items() | sort %}
-              <div class="freq-bar-wrap" title="{{ char }}: {{ count }}">
-                <div class="freq-bar" style="height:{{ ((count / max_count) * 60) | int }}px"></div>
-                <div class="freq-char">{{ char }}</div>
+              {% for item in freq %}
+              {% if item.count > 0 %}
+              <div class="freq-bar-wrap" title="{{ item.letter }}: {{ item.count }} ({{ item.percent }}%)">
+                <div class="freq-bar" style="height:{{ ((item.count / max_count) * 60) | int }}px"></div>
+                <div class="freq-char">{{ item.letter }}</div>
               </div>
+              {% endif %}
               {% endfor %}
             </div>
           </div>
@@ -182,16 +212,24 @@ const ALGO_FIELDS = {
   ecc:          { key: false, key2: false, bits: false },
 };
 
-function setAlgo(btn) {
-  document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const a = btn.dataset.algo;
-  document.getElementById('algo-value').value = a;
+function applyAlgo(a) {
+  document.querySelectorAll('.algo-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.algo === a);
+  });
   const f = ALGO_FIELDS[a] || {};
   document.getElementById('f-key').classList.toggle('hidden', !f.key);
   document.getElementById('f-key2').classList.toggle('hidden', !f.key2);
   document.getElementById('f-bits').classList.toggle('hidden', !f.bits);
 }
+
+function setAlgo(btn) {
+  const a = btn.dataset.algo;
+  document.getElementById('algo-value').value = a;
+  applyAlgo(a);
+}
+
+/* Restore state on page load (after POST result comes back) */
+applyAlgo(document.getElementById('algo-value').value || 'substitution');
 </script>
 
 {% endblock %}

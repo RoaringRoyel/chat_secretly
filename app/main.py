@@ -87,4 +87,4 @@ def run_lab(request: Request, algorithm: str=Form(...), text: str=Form(''), key:
         else: result={'error':'Unknown algorithm'}
     except Exception as e: result={'error':str(e)}
     result['time_ms']=round((time.perf_counter()-start)*1000,3)
-    return templates.TemplateResponse('lab.html', ctx(request, result=result))
+    return templates.TemplateResponse('lab.html', ctx(request, result=result, algorithm=algorithm))
