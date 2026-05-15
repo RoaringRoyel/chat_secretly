@@ -25,8 +25,8 @@
       </div>
 
       <div class="field" id="f-key">
-        <label>Key 1 — substitution 26-letter key or first permutation</label>
-        <input name="key" value="QWERTYUIOPASDFGHJKLZXCVBNM">
+        <label id="key1-label">Key 1 — substitution 26-letter key or first permutation</label>
+        <input id="key1-input" name="key" value="QWERTYUIOPASDFGHJKLZXCVBNM">
       </div>
 
       <div class="field hidden" id="f-key2">
@@ -212,7 +212,20 @@ const ALGO_FIELDS = {
   ecc:          { key: false, key2: false, bits: false },
 };
 
-function applyAlgo(a) {
+const KEY1_CONFIG = {
+  substitution: {
+    label: 'Key 1 — 26-letter substitution key (A–Z, each once)',
+    placeholder: 'QWERTYUIOPASDFGHJKLZXCVBNM',
+    default:     'QWERTYUIOPASDFGHJKLZXCVBNM',
+  },
+  double: {
+    label: 'Key 1 — first column permutation (e.g. 3 1 4 2)',
+    placeholder: '3 1 4 2',
+    default:     '3 1 4 2',
+  },
+};
+
+function applyAlgo(a, updateKeyValue) {
   document.querySelectorAll('.algo-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.algo === a);
   });
@@ -220,16 +233,26 @@ function applyAlgo(a) {
   document.getElementById('f-key').classList.toggle('hidden', !f.key);
   document.getElementById('f-key2').classList.toggle('hidden', !f.key2);
   document.getElementById('f-bits').classList.toggle('hidden', !f.bits);
+
+  const cfg = KEY1_CONFIG[a];
+  if (cfg) {
+    document.getElementById('key1-label').textContent = cfg.label;
+    const inp = document.getElementById('key1-input');
+    inp.placeholder = cfg.placeholder;
+    /* Only overwrite the value when the user clicks a button (not on page restore),
+       so a submitted value is preserved in the result view. */
+    if (updateKeyValue) inp.value = cfg.default;
+  }
 }
 
 function setAlgo(btn) {
   const a = btn.dataset.algo;
   document.getElementById('algo-value').value = a;
-  applyAlgo(a);
+  applyAlgo(a, true);   /* user clicked: update the key default */
 }
 
-/* Restore state on page load (after POST result comes back) */
-applyAlgo(document.getElementById('algo-value').value || 'substitution');
+/* Page load restore — don't overwrite the submitted key value */
+applyAlgo(document.getElementById('algo-value').value || 'substitution', false);
 </script>
 
 {% endblock %}
